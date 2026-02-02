@@ -50,8 +50,13 @@ metadata(df)
 
 # Set labels
 df <- set_var_label(df, gender, "Gender")
-df <- set_val_labels(df, gender, Male = 1, Female = 2)
+df <- set_val_labels(df, gender, `1` = "Male", `2` = "Female")
+
+# Convert to factor using labels
+df$gender <- labelled::as_factor(df$gender)
 ```
+
+**Note:** Use `labelled::as_factor()` to convert labelled variables to factors with their value labels as factor levels.
 
 ### Apply Labels from CSV
 

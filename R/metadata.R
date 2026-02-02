@@ -106,16 +106,19 @@ set_var_label <- function(data, var, label) {
 #'
 #' @param data Data frame
 #' @param var Variable name (unquoted)
-#' @param ... Named values (e.g., Male = 1, Female = 2)
+#' @param ... Value-label pairs (e.g., `1` = "Male", `2` = "Female")
 #' @return Data frame with value labels applied
 #' @export
 #'
 #' @examples
-#' df <- set_val_labels(df, gender, Male = 1, Female = 2)
+#' df <- set_val_labels(df, gender, `1` = "Male", `2` = "Female")
 #'
 set_val_labels <- function(data, var, ...) {
   var_name <- deparse(substitute(var))
-  labels <- c(...)
+  args <- list(...)
+  # Convert: `1` = "Male" -> c(Male = 1)
+  labels <- as.numeric(names(args))
+  names(labels) <- as.character(args)
   labelled::val_labels(data[[var_name]]) <- labels
   return(data)
 }
@@ -244,5 +247,5 @@ export_labels <- function(data, file = NULL) {
     message("Labels exported to: ", file)
   }
 
-  return(invisible(result))
+  return(result)
 }

@@ -12,10 +12,10 @@ varlist(data, n = Inf)
 \item{n}{Number of rows to print. Default is Inf (all rows).}
 }
 \value{
-A tibble with columns: variable, label (class "varlist")
+A tibble with columns: variable, label, value_labels (class "varlist")
 }
 \description{
-Extract variable names and labels from a data frame as a tibble.
+Extract variable names, labels, and value labels from a data frame as a tibble.
 Useful for quick reference of variable names and their descriptions.
 By default, prints all rows (unlike standard tibble which shows 10 rows).
 }

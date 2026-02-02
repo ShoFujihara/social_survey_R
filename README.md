@@ -50,12 +50,6 @@ library(socialsurvey)
 # Download and normalize labels (full-width to half-width)
 ssm <- download_csrda("ssm") |> normalize_labels()
 jlps <- download_csrda("jlps") |> normalize_labels()
-
-# Download to specific directory
-ssm <- download_csrda("ssm", dir = "data")
-
-# Download without loading
-download_csrda("ssm", load = FALSE)
 ```
 
 Data source: [CSRDA](https://csrda.iss.u-tokyo.ac.jp/infrastructure/urd/)
@@ -63,7 +57,7 @@ Data source: [CSRDA](https://csrda.iss.u-tokyo.ac.jp/infrastructure/urd/)
 ### Variable List
 
 ```r
-# List all variables with labels
+# List all variables with labels and value labels
 varlist(ssm)
 
 # Filter variables by label
@@ -73,36 +67,31 @@ varlist(ssm) |> dplyr::filter(grepl("満足", label))
 ### Frequency Table
 
 ```r
-library(socialsurvey)
-
 # Basic frequency
-freq(df, gender)
-
-# With weight
-freq(df, gender, wt = weight)
-
-# With probability weight
-freq(df, gender, wt = prob, prob = TRUE)
+freq(ssm, sex)
 
 # Japanese output
-freq(df, gender, lang = "ja")
+freq(ssm, sex, lang = "ja")
+
+# With weight (if available)
+# freq(ssm, sex, wt = weight)
 ```
 
 ### Metadata
 
 ```r
 # Get variable info
-metadata(df)
+metadata(ssm)
 
 # Set labels
-df <- set_var_label(df, gender, "Gender")
-df <- set_val_labels(df, gender, `1` = "Male", `2` = "Female")
+ssm <- set_var_label(ssm, sex, "Gender")
+ssm <- set_val_labels(ssm, sex, `1` = "Male", `2` = "Female")
 
 # Convert to factor using labels
-df$gender_fc <- labelled::as_factor(df$gender)
+ssm$sex_fc <- labelled::as_factor(ssm$sex)
 
 # Or with dplyr
-df <- df |> mutate(gender_fc = labelled::as_factor(gender))
+ssm <- ssm |> dplyr::mutate(sex_fc = labelled::as_factor(sex))
 ```
 
 **Note:** Use `labelled::as_factor()` to convert labelled variables to factors with their value labels as factor levels.
@@ -112,7 +101,7 @@ df <- df |> mutate(gender_fc = labelled::as_factor(gender))
 ```r
 # Read label definition CSV
 label_def <- read.csv("labels.csv")
-df <- apply_labels(df, label_def)
+ssm <- apply_labels(ssm, label_def)
 ```
 
 #### CSV Format
@@ -127,11 +116,9 @@ Example CSV:
 
 ```csv
 variable,label,value_labels
-gender,Gender,"1=Male; 2=Female"
+sex,Gender,"1=Male; 2=Female"
 age,Age in years,
-education,Education level,"1=High school; 2=College; 3=Graduate"
-income,Annual income (10k JPY),
-satisfaction,Job satisfaction,"1=Very dissatisfied; 2=Dissatisfied; 3=Neutral; 4=Satisfied; 5=Very satisfied"
+educ,Education level,"4=Junior high; 5=High school; 10=University"
 ```
 
 **Rules:**
@@ -148,40 +135,23 @@ JSON format allows any characters in labels (including `;` and `=`).
 
 ```r
 # Apply labels from JSON
-df <- apply_labels_json(df, "labels.json")
+ssm <- apply_labels_json(ssm, "labels.json")
 
 # Export labels to JSON
-export_labels_json(df, "labels.json")
-```
-
-Example JSON:
-
-```json
-[
-  {
-    "variable": "gender",
-    "label": "Gender",
-    "value_labels": {"1": "Male", "2": "Female"}
-  },
-  {
-    "variable": "satisfaction",
-    "label": "Job satisfaction; overall",
-    "value_labels": {"1": "A=B", "2": "Yes; No", "3": "Maybe"}
-  }
-]
+export_labels_json(ssm, "labels.json")
 ```
 
 ### Standardize Variables
 
 ```r
 # Z-scores (mean = 0, sd = 1)
-df$income_z <- std(df$income)
+ssm$pinc_z <- std(ssm$pinc)
 
 # T-scores (mean = 50, sd = 10)
-df$income_t <- std(df$income, mean = 50, sd = 10)
+ssm$pinc_t <- std(ssm$pinc, mean = 50, sd = 10)
 
 # With dplyr
-df <- df |> mutate(income_z = std(income))
+ssm <- ssm |> dplyr::mutate(pinc_z = std(pinc))
 ```
 
 ### Format Numbers
@@ -193,23 +163,23 @@ fmt(1.5, 3)    # "1.500"
 fmt(0, 2)      # "0.00"
 
 # With dplyr
-df |> mutate(mean_fmt = fmt(mean_val, 2))
+ssm |> dplyr::mutate(pinc_fmt = fmt(pinc, 0))
 ```
 
 ### Quantile Groups
 
 ```r
 # Quartiles (4 groups, default)
-df$income_q4 <- quantile_group(df$income)
+ssm$pinc_q4 <- quantile_group(ssm$pinc)
 
 # Tertiles (3 groups)
-df$income_q3 <- quantile_group(df$income, 3)
+ssm$pinc_q3 <- quantile_group(ssm$pinc, 3)
 
 # Deciles (10 groups)
-df$income_q10 <- quantile_group(df$income, 10)
+ssm$pinc_q10 <- quantile_group(ssm$pinc, 10)
 
 # With dplyr
-df <- df |> mutate(income_q = quantile_group(income, 4))
+ssm <- ssm |> dplyr::mutate(pinc_q = quantile_group(pinc, 4))
 ```
 
 More precise than `dplyr::ntile()` which uses ranks. `quantile_group()` uses actual quantile values.
@@ -217,11 +187,11 @@ More precise than `dplyr::ntile()` which uses ranks. `quantile_group()` uses act
 ### Weighted Percent Rank
 
 ```r
-# Percent rank with survey weights
-df$income_prank <- wtd_percent_rank(df$income, df$weight)
+# Percent rank (unweighted)
+ssm$pinc_prank <- wtd_percent_rank(ssm$pinc)
 
 # With dplyr
-df <- df |> mutate(income_prank = wtd_percent_rank(income, weight))
+ssm <- ssm |> dplyr::mutate(pinc_prank = wtd_percent_rank(pinc))
 ```
 
 Returns the weighted proportion of observations with values less than each value (0 to 1).
@@ -230,16 +200,16 @@ Returns the weighted proportion of observations with values less than each value
 
 ```r
 # Normalize full-width characters to half-width
-df <- normalize_labels(df)
+ssm <- normalize_labels(ssm)
 
-# Also convert full-width alphabet
-df <- normalize_labels(df, convert_alpha = TRUE)
+# Also convert full-width alphabet (ａ→a, Ａ→A)
+ssm <- normalize_labels(ssm, convert_alpha = TRUE)
 
 # Check for prohibited characters
-issues <- validate_labels(df)
+issues <- validate_labels(ssm)
 
 # Japanese output
-issues <- validate_labels(df, lang = "ja")
+issues <- validate_labels(ssm, lang = "ja")
 ```
 
 **normalize_labels() options:**

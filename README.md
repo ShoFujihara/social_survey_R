@@ -2,6 +2,11 @@
 
 R functions for social survey data analysis.
 
+## Design Philosophy
+
+- **dplyr-friendly**: All functions work seamlessly with `|>` pipe and `mutate()`
+- **Tibble output**: Results are returned as tibbles for easy reuse and further analysis
+
 ## Installation
 
 ```r

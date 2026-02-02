@@ -29,6 +29,7 @@ library(socialsurvey)
 | `std()` | Standardize variables (z-scores, T-scores, etc.) |
 | `fmt()` | Format numbers with fixed decimal places |
 | `quantile_group()` | Divide values into quantile groups |
+| `wtd_percent_rank()` | Weighted percent rank for survey data |
 
 ## Usage
 
@@ -175,6 +176,18 @@ df <- df |> mutate(income_q = quantile_group(income, 4))
 ```
 
 More precise than `dplyr::ntile()` which uses ranks. `quantile_group()` uses actual quantile values.
+
+### Weighted Percent Rank
+
+```r
+# Percent rank with survey weights
+df$income_prank <- wtd_percent_rank(df$income, df$weight)
+
+# With dplyr
+df <- df |> mutate(income_prank = wtd_percent_rank(income, weight))
+```
+
+Returns the weighted proportion of observations with values less than each value (0 to 1).
 
 ### Preprocessing Labels (Japanese Support)
 

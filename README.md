@@ -55,4 +55,4 @@ df <- set_val_labels(df, gender, Male = 1, Female = 2)
 
 ## License
 
-MIT
+GPL (>= 3)

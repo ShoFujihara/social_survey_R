@@ -1,6 +1,8 @@
 #' Download CSRDA Sample Data
 #'
-#' Download unrestricted pseudo-data from CSRDA (Center for Social Research and Data Archives).
+#' Download unrestricted pseudo-data from CSRDA
+#' (Center for Social Research and Data Archives)
+#' at the Institute of Social Science, The University of Tokyo.
 #' Data is downloaded directly from CSRDA servers.
 #'
 #' @param dataset Dataset to download: "ssm" (2015 SSM Survey) or "jlps" (JLPS-Y wave1 2007)
@@ -35,6 +37,14 @@
 #' For academic research, please apply for actual data through SSJDA Direct.
 #'
 #' Data source: \url{https://csrda.iss.u-tokyo.ac.jp/infrastructure/urd/}
+#'
+#' @note
+#' Questionnaires and codebooks are not included in the download.
+#' Please download them directly from the CSRDA website:
+#' \itemize{
+#'   \item SSM: \url{https://csrda.iss.u-tokyo.ac.jp/infrastructure/urd/ssm/}
+#'   \item JLPS: \url{https://csrda.iss.u-tokyo.ac.jp/infrastructure/urd/jlps/}
+#' }
 #'
 download_csrda <- function(dataset = c("ssm", "jlps"),
                            dir = ".",

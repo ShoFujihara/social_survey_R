@@ -1,0 +1,6 @@
+variable,label,value_labels
+gender,Gender,"1=Male; 2=Female"
+age,Age in years,
+education,Education level,"1=High school; 2=College; 3=Graduate"
+income,Annual income (10k JPY),
+satisfaction,Job satisfaction,"1=Very dissatisfied; 2=Dissatisfied; 3=Neutral; 4=Satisfied; 5=Very satisfied"

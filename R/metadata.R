@@ -129,15 +129,22 @@ set_val_labels <- function(data, var, ...) {
 #' @export
 #'
 #' @examples
-#' # Define labels
+#' # Define labels in R
 #' label_def <- data.frame(
 #'   variable = c("gender", "age"),
 #'   label = c("Gender", "Age in years"),
 #'   value_labels = c("1=Male; 2=Female", NA)
 #' )
-#'
-#' # Apply labels
 #' df <- apply_labels(df, label_def)
+#'
+#' # From CSV (machine readable)
+#' # labels.csv:
+#' # variable,label,value_labels
+#' # gender,Gender,"1=Male; 2=Female"
+#' # age,Age in years,
+#' #
+#' # label_def <- read.csv("labels.csv")
+#' # df <- apply_labels(df, label_def)
 #'
 apply_labels <- function(data, label_def) {
 

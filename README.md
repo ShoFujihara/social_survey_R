@@ -28,6 +28,7 @@ library(socialsurvey)
 | `validate_labels()` | Check labels for prohibited characters |
 | `std()` | Standardize variables (z-scores, T-scores, etc.) |
 | `fmt()` | Format numbers with fixed decimal places |
+| `quantile_group()` | Divide values into quantile groups |
 
 ## Usage
 
@@ -156,6 +157,24 @@ fmt(0, 2)      # "0.00"
 # With dplyr
 df |> mutate(mean_fmt = fmt(mean_val, 2))
 ```
+
+### Quantile Groups
+
+```r
+# Quartiles (4 groups, default)
+df$income_q4 <- quantile_group(df$income)
+
+# Tertiles (3 groups)
+df$income_q3 <- quantile_group(df$income, 3)
+
+# Deciles (10 groups)
+df$income_q10 <- quantile_group(df$income, 10)
+
+# With dplyr
+df <- df |> mutate(income_q = quantile_group(income, 4))
+```
+
+More precise than `dplyr::ntile()` which uses ranks. `quantile_group()` uses actual quantile values.
 
 ### Preprocessing Labels (Japanese Support)
 

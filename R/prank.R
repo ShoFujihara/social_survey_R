@@ -14,15 +14,15 @@
 #' w <- c(1, 2, 1, 3, 1)
 #'
 #' # Weighted percent rank
-#' wtd_percent_rank(x, w)
+#' prank(x, w)
 #'
 #' # Without weights (equal weights)
-#' wtd_percent_rank(x)
+#' prank(x)
 #'
 #' # With dplyr
-#' # df |> mutate(income_prank = wtd_percent_rank(income, weight))
+#' # ssm |> mutate(pinc_prank = prank(pinc, weight))
 #'
-wtd_percent_rank <- function(x, weights = NULL, na.rm = TRUE) {
+prank <- function(x, weights = NULL, na.rm = TRUE) {
   if (is.null(weights)) {
     weights <- rep(1, length(x))
   }

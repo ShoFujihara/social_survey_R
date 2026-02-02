@@ -8,8 +8,12 @@ normalize_labels(
   data,
   convert_numbers = TRUE,
   convert_symbols = TRUE,
-  convert_alpha = FALSE,
-  convert_space = TRUE
+  convert_alpha = TRUE,
+  convert_space = TRUE,
+  space_before_paren = TRUE,
+  space_after_paren = TRUE,
+  space_after_colon = TRUE,
+  space_after_period = TRUE
 )
 }
 \arguments{
@@ -19,9 +23,21 @@ normalize_labels(
 
 \item{convert_symbols}{Convert full-width symbols (＝, ；, etc.) to half-width. Default TRUE.}
 
-\item{convert_alpha}{Convert full-width alphabet (Ａ-Ｚ, ａ-ｚ) to half-width. Default FALSE.}
+\item{convert_alpha}{Convert full-width alphabet (Ａ-Ｚ, ａ-ｚ) to half-width. Default TRUE.}
 
 \item{convert_space}{Convert full-width space (　) to half-width. Default TRUE.}
+
+\item{space_before_paren}{Add space before half-width opening parenthesis when converting
+from full-width. Default TRUE. Example: "問1（回答）" → "問1 (回答)".}
+
+\item{space_after_paren}{Add space after half-width closing parenthesis when converting
+from full-width. Default TRUE. Example: "（注）回答" → "(注) 回答".}
+
+\item{space_after_colon}{Add space after half-width colon when converting
+from full-width. Default TRUE. Example: "問1：回答" → "問1: 回答".}
+
+\item{space_after_period}{Add space after half-width period when converting
+from full-width. Default TRUE. Example: "問1．回答" → "問1. 回答".}
 }
 \value{
 Data frame with normalized labels
@@ -31,10 +47,14 @@ Convert full-width characters to half-width in variable and value labels.
 Useful for Japanese data where numbers and symbols may be in full-width format.
 }
 \examples{
-# Normalize full-width numbers in labels
+# Normalize full-width numbers, symbols, and alphabet in labels
 df <- normalize_labels(df)
 
-# Also convert full-width alphabet
-df <- normalize_labels(df, convert_alpha = TRUE)
+# Skip alphabet conversion
+df <- normalize_labels(df, convert_alpha = FALSE)
+
+# No space adjustments
+df <- normalize_labels(df, space_before_paren = FALSE, space_after_paren = FALSE,
+                       space_after_colon = FALSE, space_after_period = FALSE)
 
 }

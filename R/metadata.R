@@ -314,20 +314,34 @@ apply_labels_json <- function(data, file) {
 #' @param data Data frame with labelled variables
 #' @param convert_numbers Convert full-width numbers (０-９) to half-width (0-9). Default TRUE.
 #' @param convert_symbols Convert full-width symbols (＝, ；, etc.) to half-width. Default TRUE.
-#' @param convert_alpha Convert full-width alphabet (Ａ-Ｚ, ａ-ｚ) to half-width. Default FALSE.
+#' @param convert_alpha Convert full-width alphabet (Ａ-Ｚ, ａ-ｚ) to half-width. Default TRUE.
 #' @param convert_space Convert full-width space (　) to half-width. Default TRUE.
+#' @param space_before_paren Add space before half-width opening parenthesis when converting
+#'   from full-width. Default TRUE. Example: "問1（回答）" → "問1 (回答)".
+#' @param space_after_paren Add space after half-width closing parenthesis when converting
+#'   from full-width. Default TRUE. Example: "（注）回答" → "(注) 回答".
+#' @param space_after_colon Add space after half-width colon when converting
+#'   from full-width. Default TRUE. Example: "問1：回答" → "問1: 回答".
+#' @param space_after_period Add space after half-width period when converting
+#'   from full-width. Default TRUE. Example: "問1．回答" → "問1. 回答".
 #' @return Data frame with normalized labels
 #' @export
 #'
 #' @examples
-#' # Normalize full-width numbers in labels
+#' # Normalize full-width numbers, symbols, and alphabet in labels
 #' df <- normalize_labels(df)
 #'
-#' # Also convert full-width alphabet
-#' df <- normalize_labels(df, convert_alpha = TRUE)
+#' # Skip alphabet conversion
+#' df <- normalize_labels(df, convert_alpha = FALSE)
+#'
+#' # No space adjustments
+#' df <- normalize_labels(df, space_before_paren = FALSE, space_after_paren = FALSE,
+#'                        space_after_colon = FALSE, space_after_period = FALSE)
 #'
 normalize_labels <- function(data, convert_numbers = TRUE, convert_symbols = TRUE,
-                             convert_alpha = FALSE, convert_space = TRUE) {
+                             convert_alpha = TRUE, convert_space = TRUE,
+                             space_before_paren = TRUE, space_after_paren = TRUE,
+                             space_after_colon = TRUE, space_after_period = TRUE) {
 
   if (!requireNamespace("labelled", quietly = TRUE)) {
     stop("Package 'labelled' is required. Install with: install.packages('labelled')")
@@ -377,7 +391,33 @@ normalize_labels <- function(data, convert_numbers = TRUE, convert_symbols = TRU
 
     if (convert_symbols) {
       for (i in seq_along(fw_symbols)) {
-        s <- gsub(fw_symbols[i], hw_symbols[i], s, fixed = TRUE)
+        # Special handling for opening parenthesis with space before
+        if (space_before_paren && fw_symbols[i] == "\uFF08") {
+          # Add space before ( but avoid double spaces
+          s <- gsub("([^ ])\uFF08", "\\1 (", s, perl = TRUE)
+          s <- gsub("^\uFF08", "(", s, perl = TRUE)  # Start of string
+          s <- gsub(" \uFF08", " (", s, fixed = TRUE)  # Already has space
+        # Special handling for closing parenthesis with space after
+        } else if (space_after_paren && fw_symbols[i] == "\uFF09") {
+          # Add space after ) but avoid double spaces
+          s <- gsub("\uFF09([^ ])", ") \\1", s, perl = TRUE)
+          s <- gsub("\uFF09$", ")", s, perl = TRUE)  # End of string
+          s <- gsub("\uFF09 ", ") ", s, fixed = TRUE)  # Already has space
+        # Special handling for colon with space after
+        } else if (space_after_colon && fw_symbols[i] == "\uFF1A") {
+          # Add space after : but avoid double spaces
+          s <- gsub("\uFF1A([^ ])", ": \\1", s, perl = TRUE)
+          s <- gsub("\uFF1A$", ":", s, perl = TRUE)  # End of string
+          s <- gsub("\uFF1A ", ": ", s, fixed = TRUE)  # Already has space
+        # Special handling for period with space after
+        } else if (space_after_period && fw_symbols[i] == "\uFF0E") {
+          # Add space after . but avoid double spaces
+          s <- gsub("\uFF0E([^ ])", ". \\1", s, perl = TRUE)
+          s <- gsub("\uFF0E$", ".", s, perl = TRUE)  # End of string
+          s <- gsub("\uFF0E ", ". ", s, fixed = TRUE)  # Already has space
+        } else {
+          s <- gsub(fw_symbols[i], hw_symbols[i], s, fixed = TRUE)
+        }
       }
     }
 

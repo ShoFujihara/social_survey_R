@@ -35,7 +35,7 @@ library(socialsurvey)
 | `std()` | Standardize variables (z-scores, T-scores, etc.) |
 | `fmt()` | Format numbers with fixed decimal places |
 | `quantile_group()` | Divide values into quantile groups |
-| `wtd_percent_rank()` | Weighted percent rank for survey data |
+| `prank()` | Weighted percent rank for survey data |
 | `download_csrda()` | Download sample data from CSRDA |
 
 ## Usage
@@ -184,14 +184,14 @@ ssm <- ssm |> dplyr::mutate(pinc_q = quantile_group(pinc, 4))
 
 More precise than `dplyr::ntile()` which uses ranks. `quantile_group()` uses actual quantile values.
 
-### Weighted Percent Rank
+### Percent Rank
 
 ```r
 # Percent rank (unweighted)
-ssm$pinc_prank <- wtd_percent_rank(ssm$pinc)
+ssm$pinc_prank <- prank(ssm$pinc)
 
 # With dplyr
-ssm <- ssm |> dplyr::mutate(pinc_prank = wtd_percent_rank(pinc))
+ssm <- ssm |> dplyr::mutate(pinc_prank = prank(pinc))
 ```
 
 Returns the weighted proportion of observations with values less than each value (0 to 1).
@@ -215,8 +215,12 @@ issues <- validate_labels(ssm, lang = "ja")
 **normalize_labels() options:**
 - `convert_numbers`: Full-width numbers ０-９ → 0-9 (default: TRUE)
 - `convert_symbols`: Full-width symbols ＝；，etc. → =;, (default: TRUE)
-- `convert_alpha`: Full-width alphabet Ａ-Ｚ → A-Z (default: FALSE)
+- `convert_alpha`: Full-width alphabet Ａ-Ｚ → A-Z (default: TRUE)
 - `convert_space`: Full-width space → half-width (default: TRUE)
+- `space_before_paren`: Add space before `(` (default: TRUE). Example: "問1（回答）" → "問1 (回答)"
+- `space_after_paren`: Add space after `)` (default: TRUE). Example: "（注）回答" → "(注) 回答"
+- `space_after_colon`: Add space after `:` (default: TRUE). Example: "問1：回答" → "問1: 回答"
+- `space_after_period`: Add space after `.` (default: TRUE). Example: "問1．回答" → "問1. 回答"
 
 **validate_labels() checks:**
 - Newline characters (`\n`, `\r`)

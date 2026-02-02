@@ -5,6 +5,7 @@
 #' @param data Data frame (supports labelled data from haven)
 #' @param lang Language for output: "en" (default) or "ja"
 #' @return Data frame with variable metadata
+#' @export
 #'
 #' @examples
 #' # Sample data with labels
@@ -89,6 +90,7 @@ metadata <- function(data, lang = "en") {
 #' @param var Variable name (unquoted)
 #' @param label Label string
 #' @return Data frame with label applied
+#' @export
 #'
 #' @examples
 #' df <- set_var_label(df, gender, "Gender")
@@ -106,6 +108,7 @@ set_var_label <- function(data, var, label) {
 #' @param var Variable name (unquoted)
 #' @param ... Named values (e.g., Male = 1, Female = 2)
 #' @return Data frame with value labels applied
+#' @export
 #'
 #' @examples
 #' df <- set_val_labels(df, gender, Male = 1, Female = 2)
@@ -123,6 +126,7 @@ set_val_labels <- function(data, var, ...) {
 #' @param data Data frame to apply labels
 #' @param label_def Data frame with columns: variable, label, value_labels
 #' @return Data frame with labels applied
+#' @export
 #'
 #' @examples
 #' # Define labels

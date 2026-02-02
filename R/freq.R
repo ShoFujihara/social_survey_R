@@ -5,8 +5,11 @@
 #' @param data Data frame
 #' @param var Variable name (unquoted)
 #' @param wt Weight variable (default = 1)
+#' @param prob If TRUE, treat wt as probability weight and use 1/wt (default = FALSE)
 #' @param lang Language for output: "en" (default) or "ja"
 #' @return Frequency table (tibble)
+#' @export
+#' @importFrom dplyr mutate count if_else
 #'
 #' @examples
 #' # Sample data
@@ -22,10 +25,13 @@
 #' # Frequency table (with weight)
 #' freq(df, gender, wt = weight)
 #'
+#' # Frequency table (with probability weight)
+#' freq(df, gender, wt = prob, prob = TRUE)
+#'
 #' # Japanese output
 #' freq(df, gender, lang = "ja")
 #'
-freq <- function(data, var, wt = 1, lang = "en") {
+freq <- function(data, var, wt = 1, prob = FALSE, lang = "en") {
   var_name <- deparse(substitute(var))
 
   # Language settings
@@ -45,10 +51,9 @@ freq <- function(data, var, wt = 1, lang = "en") {
     )
   }
 
-  # Apply weight
-
-data <- data |>
-    mutate(.wt = {{ wt }})
+  # Apply weight (if prob = TRUE, use inverse of probability)
+  data <- data |>
+    mutate(.wt = if (prob) 1 / {{ wt }} else {{ wt }})
 
   # Total counts (including NA)
   n_total <- sum(data$.wt, na.rm = TRUE)

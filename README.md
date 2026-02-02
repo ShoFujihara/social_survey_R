@@ -35,8 +35,29 @@ library(socialsurvey)
 | `fmt()` | Format numbers with fixed decimal places |
 | `quantile_group()` | Divide values into quantile groups |
 | `wtd_percent_rank()` | Weighted percent rank for survey data |
+| `download_csrda()` | Download sample data from CSRDA |
 
 ## Usage
+
+### Download Sample Data
+
+Download unrestricted pseudo-data from CSRDA for practice and education.
+
+```r
+# Download and load SSM 2015 data (2,000 cases, 35 variables)
+ssm <- download_csrda("ssm")
+
+# Download and load JLPS-Y 2007 data (1,000 cases, 72 variables)
+jlps <- download_csrda("jlps")
+
+# Download to specific directory
+ssm <- download_csrda("ssm", dir = "data")
+
+# Download without loading
+download_csrda("ssm", load = FALSE)
+```
+
+Data source: [CSRDA](https://csrda.iss.u-tokyo.ac.jp/infrastructure/urd/)
 
 ### Frequency Table
 

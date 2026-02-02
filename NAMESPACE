@@ -2,6 +2,7 @@
 
 export(apply_labels)
 export(apply_labels_json)
+export(download_csrda)
 export(export_labels)
 export(export_labels_json)
 export(fmt)

@@ -306,6 +306,239 @@ apply_labels_json <- function(data, file) {
 }
 
 
+#' Normalize Labels (Full-width to Half-width Conversion)
+#'
+#' Convert full-width characters to half-width in variable and value labels.
+#' Useful for Japanese data where numbers and symbols may be in full-width format.
+#'
+#' @param data Data frame with labelled variables
+#' @param convert_numbers Convert full-width numbers (０-９) to half-width (0-9). Default TRUE.
+#' @param convert_symbols Convert full-width symbols (＝, ；, etc.) to half-width. Default TRUE.
+#' @param convert_alpha Convert full-width alphabet (Ａ-Ｚ, ａ-ｚ) to half-width. Default FALSE.
+#' @param convert_space Convert full-width space (　) to half-width. Default TRUE.
+#' @return Data frame with normalized labels
+#' @export
+#'
+#' @examples
+#' # Normalize full-width numbers in labels
+#' df <- normalize_labels(df)
+#'
+#' # Also convert full-width alphabet
+#' df <- normalize_labels(df, convert_alpha = TRUE)
+#'
+normalize_labels <- function(data, convert_numbers = TRUE, convert_symbols = TRUE,
+                             convert_alpha = FALSE, convert_space = TRUE) {
+
+  if (!requireNamespace("labelled", quietly = TRUE)) {
+    stop("Package 'labelled' is required. Install with: install.packages('labelled')")
+  }
+
+  # Define conversion mappings
+  fw_numbers <- c("\uFF10", "\uFF11", "\uFF12", "\uFF13", "\uFF14",
+                  "\uFF15", "\uFF16", "\uFF17", "\uFF18", "\uFF19")
+  hw_numbers <- c("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+
+  fw_symbols <- c("\uFF1D", "\uFF1B", "\uFF0C", "\uFF0E", "\uFF1A",
+                  "\uFF08", "\uFF09", "\uFF3B", "\uFF3D", "\uFF5B", "\uFF5D",
+                  "\uFF0F", "\uFF3C", "\uFF0B", "\uFF0D", "\uFF0A", "\uFF05",
+                  "\uFF06", "\uFF01", "\uFF1F", "\uFF20", "\uFF03", "\uFF04",
+                  "\uFF3E", "\uFF5C", "\uFF1C", "\uFF1E", "\uFF5E", "\uFF3F",
+                  "\u2018", "\u2019", "\u201C", "\u201D")
+  hw_symbols <- c("=", ";", ",", ".", ":",
+                  "(", ")", "[", "]", "{", "}",
+                  "/", "\\", "+", "-", "*", "%",
+                  "&", "!", "?", "@", "#", "$",
+                  "^", "|", "<", ">", "~", "_",
+                  "'", "'", "\"", "\"")
+
+  fw_alpha_upper <- c("\uFF21", "\uFF22", "\uFF23", "\uFF24", "\uFF25",
+                      "\uFF26", "\uFF27", "\uFF28", "\uFF29", "\uFF2A",
+                      "\uFF2B", "\uFF2C", "\uFF2D", "\uFF2E", "\uFF2F",
+                      "\uFF30", "\uFF31", "\uFF32", "\uFF33", "\uFF34",
+                      "\uFF35", "\uFF36", "\uFF37", "\uFF38", "\uFF39", "\uFF3A")
+  hw_alpha_upper <- LETTERS
+
+  fw_alpha_lower <- c("\uFF41", "\uFF42", "\uFF43", "\uFF44", "\uFF45",
+                      "\uFF46", "\uFF47", "\uFF48", "\uFF49", "\uFF4A",
+                      "\uFF4B", "\uFF4C", "\uFF4D", "\uFF4E", "\uFF4F",
+                      "\uFF50", "\uFF51", "\uFF52", "\uFF53", "\uFF54",
+                      "\uFF55", "\uFF56", "\uFF57", "\uFF58", "\uFF59", "\uFF5A")
+  hw_alpha_lower <- letters
+
+  # Helper function to replace characters
+  normalize_string <- function(s) {
+    if (is.null(s) || is.na(s)) return(s)
+
+    if (convert_numbers) {
+      for (i in seq_along(fw_numbers)) {
+        s <- gsub(fw_numbers[i], hw_numbers[i], s, fixed = TRUE)
+      }
+    }
+
+    if (convert_symbols) {
+      for (i in seq_along(fw_symbols)) {
+        s <- gsub(fw_symbols[i], hw_symbols[i], s, fixed = TRUE)
+      }
+    }
+
+    if (convert_alpha) {
+      for (i in seq_along(fw_alpha_upper)) {
+        s <- gsub(fw_alpha_upper[i], hw_alpha_upper[i], s, fixed = TRUE)
+      }
+      for (i in seq_along(fw_alpha_lower)) {
+        s <- gsub(fw_alpha_lower[i], hw_alpha_lower[i], s, fixed = TRUE)
+      }
+    }
+
+    if (convert_space) {
+      s <- gsub("\u3000", " ", s, fixed = TRUE)  # Full-width space
+    }
+
+    return(s)
+  }
+
+  # Process each variable
+  for (v in names(data)) {
+    # Normalize variable label
+    var_lbl <- labelled::var_label(data[[v]])
+    if (!is.null(var_lbl)) {
+      labelled::var_label(data[[v]]) <- normalize_string(var_lbl)
+    }
+
+    # Normalize value labels
+    val_lbls <- labelled::val_labels(data[[v]])
+    if (!is.null(val_lbls) && length(val_lbls) > 0) {
+      new_names <- sapply(names(val_lbls), normalize_string)
+      names(val_lbls) <- new_names
+      labelled::val_labels(data[[v]]) <- val_lbls
+    }
+  }
+
+  return(data)
+}
+
+
+#' Validate Labels for Prohibited Characters
+#'
+#' Check variable and value labels for prohibited or problematic characters.
+#' Returns a report of any issues found.
+#'
+#' @param data Data frame with labelled variables
+#' @param check_newlines Check for newline characters (\\n, \\r). Default TRUE.
+#' @param check_tabs Check for tab characters (\\t). Default TRUE.
+#' @param check_control Check for other control characters. Default TRUE.
+#' @param check_csv_special Check for CSV special characters (`;` in value labels). Default TRUE.
+#' @param lang Language for output: "en" (default) or "ja"
+#' @return Data frame with validation issues (invisible if no issues)
+#' @export
+#'
+#' @examples
+#' # Check for problematic characters
+#' issues <- validate_labels(df)
+#'
+#' # Japanese output
+#' issues <- validate_labels(df, lang = "ja")
+#'
+validate_labels <- function(data, check_newlines = TRUE, check_tabs = TRUE,
+                            check_control = TRUE, check_csv_special = TRUE,
+                            lang = "en") {
+
+  if (!requireNamespace("labelled", quietly = TRUE)) {
+    stop("Package 'labelled' is required. Install with: install.packages('labelled')")
+  }
+
+  issues <- data.frame(
+    variable = character(),
+    label_type = character(),
+    value = character(),
+    issue = character(),
+    stringsAsFactors = FALSE
+  )
+
+  # Helper to check a string for issues
+  # internal_type is always "variable_label" or "value_label" for logic
+  # display_type is the localized version for output
+  check_string <- function(s, var_name, internal_type, display_type, value = NA) {
+    if (is.null(s) || is.na(s)) return(NULL)
+
+    found <- character()
+
+    if (check_newlines && grepl("[\n\r]", s)) {
+      found <- c(found, if (lang == "ja") "改行文字" else "newline character")
+    }
+
+    if (check_tabs && grepl("\t", s)) {
+      found <- c(found, if (lang == "ja") "タブ文字" else "tab character")
+    }
+
+    if (check_control) {
+      # Check for control characters (excluding \n, \r, \t which are checked separately)
+      ctrl_pattern <- "[\\x01-\\x08\\x0B\\x0C\\x0E-\\x1F]"
+      if (grepl(ctrl_pattern, s, perl = TRUE)) {
+        found <- c(found, if (lang == "ja") "制御文字" else "control character")
+      }
+    }
+
+    if (check_csv_special && internal_type == "value_label" && grepl(";", s, fixed = TRUE)) {
+      found <- c(found, if (lang == "ja") "セミコロン(CSV非互換)" else "semicolon (CSV incompatible)")
+    }
+
+    if (length(found) > 0) {
+      return(data.frame(
+        variable = var_name,
+        label_type = display_type,
+        value = if (is.na(value)) "" else as.character(value),
+        issue = paste(found, collapse = ", "),
+        stringsAsFactors = FALSE
+      ))
+    }
+    return(NULL)
+  }
+
+  # Check each variable
+  for (v in names(data)) {
+    # Check variable label
+    var_lbl <- labelled::var_label(data[[v]])
+    if (!is.null(var_lbl)) {
+      display_type <- if (lang == "ja") "変数ラベル" else "variable_label"
+      result <- check_string(var_lbl, v, "variable_label", display_type)
+      if (!is.null(result)) {
+        issues <- rbind(issues, result)
+      }
+    }
+
+    # Check value labels
+    val_lbls <- labelled::val_labels(data[[v]])
+    if (!is.null(val_lbls) && length(val_lbls) > 0) {
+      display_type <- if (lang == "ja") "値ラベル" else "value_label"
+      for (i in seq_along(val_lbls)) {
+        lbl_name <- names(val_lbls)[i]
+        lbl_value <- val_lbls[i]
+        result <- check_string(lbl_name, v, "value_label", display_type, lbl_value)
+        if (!is.null(result)) {
+          issues <- rbind(issues, result)
+        }
+      }
+    }
+  }
+
+  # Report results
+  if (nrow(issues) == 0) {
+    msg <- if (lang == "ja") "問題は見つかりませんでした" else "No issues found"
+    message(msg)
+    return(invisible(issues))
+  } else {
+    msg <- if (lang == "ja") {
+      paste0(nrow(issues), " 件の問題が見つかりました")
+    } else {
+      paste0(nrow(issues), " issue(s) found")
+    }
+    message(msg)
+    return(issues)
+  }
+}
+
+
 #' Export Labels to JSON Format
 #'
 #' Export variable labels and value labels to a JSON file.

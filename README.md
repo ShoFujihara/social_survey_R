@@ -24,6 +24,8 @@ library(socialsurvey)
 | `apply_labels_json()` | Batch apply labels from JSON |
 | `export_labels()` | Export labels to CSV |
 | `export_labels_json()` | Export labels to JSON |
+| `normalize_labels()` | Convert full-width to half-width characters |
+| `validate_labels()` | Check labels for prohibited characters |
 
 ## Usage
 
@@ -127,6 +129,34 @@ Example JSON:
   }
 ]
 ```
+
+### Preprocessing Labels (Japanese Support)
+
+```r
+# Normalize full-width characters to half-width
+df <- normalize_labels(df)
+
+# Also convert full-width alphabet
+df <- normalize_labels(df, convert_alpha = TRUE)
+
+# Check for prohibited characters
+issues <- validate_labels(df)
+
+# Japanese output
+issues <- validate_labels(df, lang = "ja")
+```
+
+**normalize_labels() options:**
+- `convert_numbers`: Full-width numbers ０-９ → 0-9 (default: TRUE)
+- `convert_symbols`: Full-width symbols ＝；，etc. → =;, (default: TRUE)
+- `convert_alpha`: Full-width alphabet Ａ-Ｚ → A-Z (default: FALSE)
+- `convert_space`: Full-width space → half-width (default: TRUE)
+
+**validate_labels() checks:**
+- Newline characters (`\n`, `\r`)
+- Tab characters (`\t`)
+- Control characters
+- Semicolons in value labels (CSV incompatible)
 
 ## License
 

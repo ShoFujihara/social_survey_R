@@ -2,7 +2,7 @@ Package: socialsurvey
 Title: R Functions for Social Survey Data Analysis
 Version: 0.1.0
 Authors@R:
-    person("Sho", "Fujihara", , "fujihara@example.com", role = c("aut", "cre"))
+    person("Sho", "Fujihara", , "sho.fujihara@iss.u-tokyo.ac.jp", role = c("aut", "cre"))
 Description: A collection of R functions for social survey data analysis.
     Includes tools for frequency tables, metadata management, variable labels,
     value labels, and codebook generation. Supports Stata, SPSS, and SAS files.

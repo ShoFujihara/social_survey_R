@@ -22,6 +22,7 @@ library(socialsurvey)
 | Function | Description |
 |----------|-------------|
 | `freq()` | Frequency table with valid/missing percentages |
+| `varlist()` | List variables with labels |
 | `metadata()` | Extract variable and value labels |
 | `set_var_label()` | Set variable label |
 | `set_val_labels()` | Set value labels |
@@ -44,11 +45,11 @@ library(socialsurvey)
 Download unrestricted pseudo-data from CSRDA for practice and education.
 
 ```r
-# Download and load SSM 2015 data (2,000 cases, 35 variables)
-ssm <- download_csrda("ssm")
+library(socialsurvey)
 
-# Download and load JLPS-Y 2007 data (1,000 cases, 72 variables)
-jlps <- download_csrda("jlps")
+# Download and normalize labels (full-width to half-width)
+ssm <- download_csrda("ssm") |> normalize_labels()
+jlps <- download_csrda("jlps") |> normalize_labels()
 
 # Download to specific directory
 ssm <- download_csrda("ssm", dir = "data")
@@ -58,6 +59,16 @@ download_csrda("ssm", load = FALSE)
 ```
 
 Data source: [CSRDA](https://csrda.iss.u-tokyo.ac.jp/infrastructure/urd/)
+
+### Variable List
+
+```r
+# List all variables with labels
+varlist(ssm)
+
+# Filter variables by label
+varlist(ssm) |> dplyr::filter(grepl("満足", label))
+```
 
 ### Frequency Table
 

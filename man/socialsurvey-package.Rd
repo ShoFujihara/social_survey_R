@@ -41,6 +41,6 @@ freq(dplyr::starwars, gender, lang = "ja")
 
 }
 \author{
-\strong{Maintainer}: Sho Fujihara \email{fujihara@example.com}
+\strong{Maintainer}: Sho Fujihara \email{sho.fujihara@iss.u-tokyo.ac.jp}
 
 }

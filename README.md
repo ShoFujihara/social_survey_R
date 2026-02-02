@@ -57,8 +57,11 @@ Data source: [CSRDA](https://csrda.iss.u-tokyo.ac.jp/infrastructure/urd/)
 ### Variable List
 
 ```r
-# List all variables with labels and value labels
+# List all variables with labels
 varlist(ssm)
+
+# Include value labels
+varlist(ssm, value_labels = TRUE)
 
 # Filter variables by label
 varlist(ssm) |> dplyr::filter(grepl("満足", label))

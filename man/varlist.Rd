@@ -4,18 +4,20 @@
 \alias{varlist}
 \title{List Variables with Labels}
 \usage{
-varlist(data, n = Inf)
+varlist(data, value_labels = FALSE, n = Inf)
 }
 \arguments{
 \item{data}{A data frame (typically with labelled variables)}
 
+\item{value_labels}{If TRUE, include value labels column. Default is FALSE.}
+
 \item{n}{Number of rows to print. Default is Inf (all rows).}
 }
 \value{
-A tibble with columns: variable, label, value_labels (class "varlist")
+A tibble with columns: variable, label (and optionally value_labels)
 }
 \description{
-Extract variable names, labels, and value labels from a data frame as a tibble.
+Extract variable names and labels from a data frame as a tibble.
 Useful for quick reference of variable names and their descriptions.
 By default, prints all rows (unlike standard tibble which shows 10 rows).
 }
@@ -23,6 +25,9 @@ By default, prints all rows (unlike standard tibble which shows 10 rows).
 \dontrun{
 ssm <- download_csrda("ssm")
 varlist(ssm)
+
+# Include value labels
+varlist(ssm, value_labels = TRUE)
 
 # Filter variables
 varlist(ssm) |> dplyr::filter(grepl("問6", label))

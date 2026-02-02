@@ -175,3 +175,74 @@ apply_labels <- function(data, label_def) {
 
   return(data)
 }
+
+
+#' Export Labels to CSV Format
+#'
+#' Export variable labels and value labels from a data frame to a CSV-compatible
+#' data frame that can be used with apply_labels().
+#'
+#' @param data Data frame with labelled variables
+#' @param file Optional file path to save CSV. If NULL, returns data frame only.
+#' @return Data frame with columns: variable, label, value_labels
+#' @export
+#'
+#' @examples
+#' library(labelled)
+#' df <- data.frame(
+#'   gender = c(1, 2, 1, 2),
+#'   age = c(25, 30, 35, 40)
+#' )
+#' var_label(df$gender) <- "Gender"
+#' val_labels(df$gender) <- c("Male" = 1, "Female" = 2)
+#' var_label(df$age) <- "Age in years"
+#'
+#' # Get as data frame
+#' label_def <- export_labels(df)
+#'
+#' # Save to CSV
+#' export_labels(df, "labels.csv")
+#'
+export_labels <- function(data, file = NULL) {
+
+  # Check if labelled package is available
+  if (!requireNamespace("labelled", quietly = TRUE)) {
+    stop("Package 'labelled' is required. Install with: install.packages('labelled')")
+  }
+
+  # Get variable names
+  vars <- names(data)
+
+  # Get variable labels
+  var_labels <- sapply(vars, function(v) {
+    lbl <- labelled::var_label(data[[v]])
+    if (is.null(lbl)) NA_character_ else lbl
+  })
+
+  # Get value labels as string (format: "1=Male; 2=Female")
+  val_labels <- sapply(vars, function(v) {
+    lbl <- labelled::val_labels(data[[v]])
+    if (is.null(lbl) || length(lbl) == 0) {
+      NA_character_
+    } else {
+      paste(paste0(lbl, "=", names(lbl)), collapse = "; ")
+    }
+  })
+
+  # Create result data frame
+  result <- data.frame(
+    variable = vars,
+    label = var_labels,
+    value_labels = val_labels,
+    stringsAsFactors = FALSE,
+    row.names = NULL
+  )
+
+  # Save to file if specified
+  if (!is.null(file)) {
+    utils::write.csv(result, file, row.names = FALSE, na = "")
+    message("Labels exported to: ", file)
+  }
+
+  return(invisible(result))
+}

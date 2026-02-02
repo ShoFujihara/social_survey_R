@@ -4,7 +4,7 @@
 \alias{freq}
 \title{Frequency Table}
 \usage{
-freq(data, var, wt = 1, prob = FALSE, lang = "en")
+freq(data, var, wt = 1, prob = FALSE, lang = "en", quiet = FALSE)
 }
 \arguments{
 \item{data}{Data frame}
@@ -16,6 +16,8 @@ freq(data, var, wt = 1, prob = FALSE, lang = "en")
 \item{prob}{If TRUE, treat wt as probability weight and use 1/wt (default = FALSE)}
 
 \item{lang}{Language for output: "en" (default) or "ja"}
+
+\item{quiet}{If TRUE, suppress summary output (default = FALSE)}
 }
 \value{
 Frequency table (tibble)

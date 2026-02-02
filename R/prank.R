@@ -33,7 +33,7 @@ prank <- function(x, weights = NULL, na.rm = TRUE) {
 
   n <- length(x)
   result <- rep(NA_real_, n)
-  valid <- if (na.rm) !is.na(x) else rep(TRUE, n)
+  valid <- if (na.rm) !is.na(x) & !is.na(weights) else rep(TRUE, n)
   total_weight <- sum(weights[valid], na.rm = TRUE)
 
   if (total_weight == 0) {
@@ -41,11 +41,34 @@ prank <- function(x, weights = NULL, na.rm = TRUE) {
     return(result)
   }
 
-  for (i in which(valid)) {
-    # Sum of weights for values smaller than current value
-    smaller <- sum(weights[valid & x < x[i]], na.rm = TRUE)
-    result[i] <- smaller / total_weight
-  }
+  # Vectorized computation using sorted order
+  x_valid <- x[valid]
+  w_valid <- weights[valid]
 
+  # Sort by x values
+
+  ord <- order(x_valid)
+  x_sorted <- x_valid[ord]
+  w_sorted <- w_valid[ord]
+
+  # Cumulative sum of weights (excluding current value)
+  cumw <- cumsum(w_sorted)
+  cumw_before <- c(0, cumw[-length(cumw)])
+
+  # Handle ties: all tied values get the same rank (weight sum before first occurrence)
+  # Use match to find first occurrence of each value
+  unique_x <- unique(x_sorted)
+  first_idx <- match(x_sorted, unique_x)
+  cumw_first <- cumw_before[match(unique_x, x_sorted)]
+  cumw_adjusted <- cumw_first[first_idx]
+
+  # Compute percent rank
+  prank_sorted <- cumw_adjusted / total_weight
+
+  # Map back to original order
+  prank_valid <- numeric(length(x_valid))
+  prank_valid[ord] <- prank_sorted
+
+  result[valid] <- prank_valid
   return(result)
 }

@@ -7,6 +7,7 @@
 #' @param wt Weight variable (default = 1)
 #' @param prob If TRUE, treat wt as probability weight and use 1/wt (default = FALSE)
 #' @param lang Language for output: "en" (default) or "ja"
+#' @param quiet If TRUE, suppress summary output (default = FALSE)
 #' @return Frequency table (tibble)
 #' @export
 #' @importFrom dplyr mutate count if_else
@@ -31,7 +32,7 @@
 #' # Japanese output
 #' freq(df, gender, lang = "ja")
 #'
-freq <- function(data, var, wt = 1, prob = FALSE, lang = "en") {
+freq <- function(data, var, wt = 1, prob = FALSE, lang = "en", quiet = FALSE) {
   var_name <- deparse(substitute(var))
 
   # Language settings
@@ -70,11 +71,13 @@ freq <- function(data, var, wt = 1, prob = FALSE, lang = "en") {
     )
 
   # Display summary
-  cat(labels$var, ": ", var_name, "\n", sep = "")
-  cat(labels$total, ": ", round(n_total, 1),
-      "  ", labels$valid, ": ", round(n_valid, 1),
-      "  ", labels$missing, ": ", round(n_missing, 1),
-      " (", round(n_missing / n_total * 100, 1), "%)\n\n", sep = "")
+  if (!quiet) {
+    cat(labels$var, ": ", var_name, "\n", sep = "")
+    cat(labels$total, ": ", round(n_total, 1),
+        "  ", labels$valid, ": ", round(n_valid, 1),
+        "  ", labels$missing, ": ", round(n_missing, 1),
+        " (", round(n_missing / n_total * 100, 1), "%)\n\n", sep = "")
+  }
 
   return(result)
 }

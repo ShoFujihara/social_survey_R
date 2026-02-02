@@ -4,12 +4,14 @@
 \alias{metadata}
 \title{Get Variable and Value Labels Metadata}
 \usage{
-metadata(data, lang = "en")
+metadata(data, lang = "en", quiet = FALSE)
 }
 \arguments{
 \item{data}{Data frame (supports labelled data from haven)}
 
 \item{lang}{Language for output: "en" (default) or "ja"}
+
+\item{quiet}{If TRUE, suppress summary output (default = FALSE)}
 }
 \value{
 Data frame with variable metadata

@@ -4,6 +4,7 @@
 #'
 #' @param data Data frame (supports labelled data from haven)
 #' @param lang Language for output: "en" (default) or "ja"
+#' @param quiet If TRUE, suppress summary output (default = FALSE)
 #' @return Data frame with variable metadata
 #' @export
 #'
@@ -21,7 +22,7 @@
 #' # Get metadata
 #' metadata(df)
 #'
-metadata <- function(data, lang = "en") {
+metadata <- function(data, lang = "en", quiet = FALSE) {
 
   # Check if labelled package is available
   if (!requireNamespace("labelled", quietly = TRUE)) {
@@ -71,14 +72,16 @@ metadata <- function(data, lang = "en") {
   )
 
   # Display summary
-  labels <- if (lang == "ja") {
-    list(title = "メタデータ", vars = "変数数", cases = "ケース数")
-  } else {
-    list(title = "Metadata", vars = "Variables", cases = "Cases")
-  }
+  if (!quiet) {
+    labels <- if (lang == "ja") {
+      list(title = "メタデータ", vars = "変数数", cases = "ケース数")
+    } else {
+      list(title = "Metadata", vars = "Variables", cases = "Cases")
+    }
 
-  cat(labels$title, "\n", sep = "")
-  cat(labels$cases, ": ", n_total, "  ", labels$vars, ": ", length(vars), "\n\n", sep = "")
+    cat(labels$title, "\n", sep = "")
+    cat(labels$cases, ": ", n_total, "  ", labels$vars, ": ", length(vars), "\n\n", sep = "")
+  }
 
   return(result)
 }

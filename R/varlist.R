@@ -30,8 +30,8 @@ varlist <- function(data, value_labels = FALSE, n = Inf) {
   var_names <- names(data)
 
   labels <- vapply(data, function(x) {
-    lbl <- attr(x, "label")
-    if (is.null(lbl)) NA_character_ else as.character(lbl)
+    lbl <- attr(x, "label", exact = TRUE)
+    if (is.null(lbl)) NA_character_ else as.character(lbl[1])
   }, character(1))
 
   result <- tibble::tibble(

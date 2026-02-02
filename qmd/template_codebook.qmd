@@ -1,0 +1,125 @@
+---
+title: "`r params$title`"
+author: "`r params$author`"
+date: "`r Sys.Date()`"
+format:
+  html:
+    toc: false
+    self-contained: true
+    page-layout: full
+    number-sections: false
+    code-fold: true
+execute:
+  cache: false
+  warning: false
+  message: false
+  echo: false
+editor: source
+params:
+  title: "変数検索"
+  author: "作成者"
+  survey_url: ""
+  data_files: !expr list()
+---
+
+```{r setup}
+#| echo: false
+pacman::p_load(tidyverse,
+               haven,
+               labelled,
+               DT)
+```
+
+# 調査の概要
+
+```{r overview}
+#| echo: false
+#| results: asis
+if (params$survey_url != "") {
+  cat("- 調査の概要については以下を参照してください．\n")
+  cat(paste0("<", params$survey_url, ">\n"))
+} else {
+  cat("- 調査の概要については調査票を参照してください．\n")
+}
+```
+
+# 変数や値ラベルの検索
+
+- 変数名や値ラベルの検索が可能です．ただし，調査票も必ず確認するようにしてください．
+
+```{r search}
+#| echo: false
+# 各データセットの変数情報を取得
+get_varinfo <- function(file_path, source_name) {
+  # ファイル拡張子に応じて読み込み関数を選択
+  ext <- tools::file_ext(file_path) |> tolower()
+  data <- switch(ext,
+    "dta" = read_dta(file_path),
+    "sav" = read_sav(file_path),
+    "sas7bdat" = read_sas(file_path),
+    stop(paste("未対応のファイル形式:", ext))
+  )
+  look_for(data) |>
+    convert_list_columns_to_character() |>
+    select(variable, label, value_labels) |>
+    mutate(データソース = source_name)
+}
+
+# データソースごとに変数情報を取得して結合
+base <- map2_dfr(
+  params$data_files$path,
+  params$data_files$name,
+  get_varinfo
+) |>
+  mutate(order = row_number()) |>
+  group_by(variable) |>
+  summarise(
+    label = first(label),
+    value_labels = first(value_labels),
+    データソース = paste(unique(データソース), collapse = ", "),
+    order = min(order),
+    .groups = "drop"
+  ) |>
+  arrange(order) |>
+  select(-order) |>
+  rownames_to_column(var = "番号")
+
+base |>
+  rename(変数 = variable,
+         変数ラベル = label,
+         値ラベル = value_labels) |>
+  select(番号, 変数, 変数ラベル, 値ラベル, データソース) |>
+  datatable(filter = 'top',
+            rownames = FALSE,
+            escape = FALSE,
+            options = list(
+              pageLength = 20,
+              autoWidth = FALSE,
+              scrollX = TRUE,
+              language = list(
+                search = "検索:",
+                lengthMenu = "_MENU_ 件表示",
+                info = "_TOTAL_ 件中 _START_ - _END_ 件表示",
+                infoEmpty = "0 件",
+                infoFiltered = "（全 _MAX_ 件から絞込）",
+                paginate = list(
+                  first = "先頭",
+                  last = "最終",
+                  previous = "前",
+                  `next` = "次"
+                )
+              ),
+              columnDefs = list(
+                list(width = '50px', targets = 0),
+                list(width = '150px', targets = 1),
+                list(width = '300px', targets = 2),
+                list(width = '350px', targets = 3,
+                     render = JS("function(data, type, row) {
+                       if(type === 'display' && data && data.length > 80) {
+                         return '<span title=\"' + data + '\">' + data.substr(0, 80) + '...</span>';
+                       }
+                       return data;
+                     }")),
+                list(width = '180px', targets = 4)
+              )))
+```

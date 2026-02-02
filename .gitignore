@@ -1,0 +1,26 @@
+# R
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+
+# Data files (do not upload raw data)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Output
+output/*
+!output/.gitkeep
+figures/*
+!figures/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Quarto
+*_files/
+*_cache/
+*.html

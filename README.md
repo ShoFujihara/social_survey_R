@@ -26,6 +26,8 @@ library(socialsurvey)
 | `export_labels_json()` | Export labels to JSON |
 | `normalize_labels()` | Convert full-width to half-width characters |
 | `validate_labels()` | Check labels for prohibited characters |
+| `std()` | Standardize variables (z-scores, T-scores, etc.) |
+| `fmt()` | Format numbers with fixed decimal places |
 
 ## Usage
 
@@ -128,6 +130,31 @@ Example JSON:
     "value_labels": {"1": "A=B", "2": "Yes; No", "3": "Maybe"}
   }
 ]
+```
+
+### Standardize Variables
+
+```r
+# Z-scores (mean = 0, sd = 1)
+df$income_z <- std(df$income)
+
+# T-scores (mean = 50, sd = 10)
+df$income_t <- std(df$income, mean = 50, sd = 10)
+
+# With dplyr
+df <- df |> mutate(income_z = std(income))
+```
+
+### Format Numbers
+
+```r
+# Preserve trailing zeros
+fmt(1.5)       # "1.50"
+fmt(1.5, 3)    # "1.500"
+fmt(0, 2)      # "0.00"
+
+# With dplyr
+df |> mutate(mean_fmt = fmt(mean_val, 2))
 ```
 
 ### Preprocessing Labels (Japanese Support)

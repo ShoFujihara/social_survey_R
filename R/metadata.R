@@ -168,9 +168,13 @@ apply_labels <- function(data, label_def) {
       labels <- numeric(length(pairs))
       names(labels) <- character(length(pairs))
       for (j in seq_along(pairs)) {
-        parts <- strsplit(trimws(pairs[j]), "=", fixed = TRUE)[[1]]
-        labels[j] <- as.numeric(parts[1])
-        names(labels)[j] <- parts[2]
+        pair <- trimws(pairs[j])
+        # Split only on first "=" to allow "=" in labels
+        eq_pos <- regexpr("=", pair, fixed = TRUE)
+        if (eq_pos > 0) {
+          labels[j] <- as.numeric(substr(pair, 1, eq_pos - 1))
+          names(labels)[j] <- substr(pair, eq_pos + 1, nchar(pair))
+        }
       }
       labelled::val_labels(data[[var_name]]) <- labels
     }
@@ -245,6 +249,113 @@ export_labels <- function(data, file = NULL) {
   if (!is.null(file)) {
     utils::write.csv(result, file, row.names = FALSE, na = "")
     message("Labels exported to: ", file)
+  }
+
+  return(result)
+}
+
+
+#' Apply Labels from JSON File
+#'
+#' Apply variable labels and value labels from a JSON file.
+#' JSON format allows special characters (`;`, `=`, `"`) in labels.
+#'
+#' @param data Data frame to apply labels
+#' @param file Path to JSON file
+#' @return Data frame with labels applied
+#' @export
+#'
+#' @examples
+#' # JSON format:
+#' # [
+#' #   {"variable": "gender", "label": "Gender",
+#' #    "value_labels": {"1": "Male", "2": "Female"}},
+#' #   {"variable": "age", "label": "Age in years"}
+#' # ]
+#' #
+#' # df <- apply_labels_json(df, "labels.json")
+#'
+apply_labels_json <- function(data, file) {
+
+  if (!requireNamespace("jsonlite", quietly = TRUE)) {
+    stop("Package 'jsonlite' is required. Install with: install.packages('jsonlite')")
+  }
+
+  label_list <- jsonlite::fromJSON(file, simplifyDataFrame = FALSE)
+
+  for (item in label_list) {
+    var_name <- item$variable
+
+    if (!(var_name %in% names(data))) next
+
+    # Set variable label
+    if (!is.null(item$label)) {
+      labelled::var_label(data[[var_name]]) <- item$label
+    }
+
+    # Set value labels
+    val_lbl <- item$value_labels
+    if (!is.null(val_lbl) && length(val_lbl) > 0) {
+      labels <- as.numeric(names(val_lbl))
+      names(labels) <- as.character(val_lbl)
+      labelled::val_labels(data[[var_name]]) <- labels
+    }
+  }
+
+  return(data)
+}
+
+
+#' Export Labels to JSON Format
+#'
+#' Export variable labels and value labels to a JSON file.
+#' JSON format allows special characters (`;`, `=`, `"`) in labels.
+#'
+#' @param data Data frame with labelled variables
+#' @param file Optional file path to save JSON. If NULL, returns list only.
+#' @param pretty If TRUE, format JSON with indentation (default TRUE)
+#' @return List with label definitions (invisibly if file is specified)
+#' @export
+#'
+#' @examples
+#' # Export to JSON
+#' export_labels_json(df, "labels.json")
+#'
+#' # Get as list
+#' label_list <- export_labels_json(df)
+#'
+export_labels_json <- function(data, file = NULL, pretty = TRUE) {
+
+  if (!requireNamespace("jsonlite", quietly = TRUE)) {
+    stop("Package 'jsonlite' is required. Install with: install.packages('jsonlite')")
+  }
+
+  vars <- names(data)
+
+  result <- lapply(vars, function(v) {
+    var_label <- labelled::var_label(data[[v]])
+    val_labels <- labelled::val_labels(data[[v]])
+
+    item <- list(variable = v)
+
+    if (!is.null(var_label)) {
+      item$label <- var_label
+    }
+
+    if (!is.null(val_labels) && length(val_labels) > 0) {
+      # Convert c(Male = 1, Female = 2) to list("1" = "Male", "2" = "Female")
+      vl <- as.list(names(val_labels))
+      names(vl) <- as.character(val_labels)
+      item$value_labels <- vl
+    }
+
+    item
+  })
+
+  if (!is.null(file)) {
+    jsonlite::write_json(result, file, pretty = pretty, auto_unbox = TRUE)
+    message("Labels exported to: ", file)
+    return(invisible(result))
   }
 
   return(result)

@@ -20,7 +20,10 @@ library(socialsurvey)
 | `metadata()` | Extract variable and value labels |
 | `set_var_label()` | Set variable label |
 | `set_val_labels()` | Set value labels |
-| `apply_labels()` | Batch apply labels from definition table |
+| `apply_labels()` | Batch apply labels from CSV |
+| `apply_labels_json()` | Batch apply labels from JSON |
+| `export_labels()` | Export labels to CSV |
+| `export_labels_json()` | Export labels to JSON |
 
 ## Usage
 
@@ -53,7 +56,10 @@ df <- set_var_label(df, gender, "Gender")
 df <- set_val_labels(df, gender, `1` = "Male", `2` = "Female")
 
 # Convert to factor using labels
-df$gender <- labelled::as_factor(df$gender)
+df$gender_fc <- labelled::as_factor(df$gender)
+
+# Or with dplyr
+df <- df |> mutate(gender_fc = labelled::as_factor(gender))
 ```
 
 **Note:** Use `labelled::as_factor()` to convert labelled variables to factors with their value labels as factor levels.
@@ -88,8 +94,39 @@ satisfaction,Job satisfaction,"1=Very dissatisfied; 2=Dissatisfied; 3=Neutral; 4
 **Rules:**
 - Use semicolon (`;`) to separate multiple value labels
 - Use equals sign (`=`) to separate value and label (format: `value=label`)
-- Enclose value_labels in quotes if it contains commas or semicolons
+- Enclose value_labels in quotes if it contains commas
 - Leave cell empty if no label needed
+- Labels can contain `=` (e.g., `1=A=B` works)
+- Labels **cannot** contain `;` (used as separator)
+
+### Apply Labels from JSON
+
+JSON format allows any characters in labels (including `;` and `=`).
+
+```r
+# Apply labels from JSON
+df <- apply_labels_json(df, "labels.json")
+
+# Export labels to JSON
+export_labels_json(df, "labels.json")
+```
+
+Example JSON:
+
+```json
+[
+  {
+    "variable": "gender",
+    "label": "Gender",
+    "value_labels": {"1": "Male", "2": "Female"}
+  },
+  {
+    "variable": "satisfaction",
+    "label": "Job satisfaction; overall",
+    "value_labels": {"1": "A=B", "2": "Yes; No", "3": "Maybe"}
+  }
+]
+```
 
 ## License
 

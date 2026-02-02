@@ -11,7 +11,7 @@ set_val_labels(data, var, ...)
 
 \item{var}{Variable name (unquoted)}
 
-\item{...}{Named values (e.g., Male = 1, Female = 2)}
+\item{...}{Value-label pairs (e.g., \code{1} = "Male", \code{2} = "Female")}
 }
 \value{
 Data frame with value labels applied
@@ -20,6 +20,6 @@ Data frame with value labels applied
 Set Value Labels
 }
 \examples{
-df <- set_val_labels(df, gender, Male = 1, Female = 2)
+df <- set_val_labels(df, gender, `1` = "Male", `2` = "Female")
 
 }

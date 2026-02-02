@@ -16,5 +16,6 @@ Imports:
     haven
 Suggests:
     DT,
+    jsonlite,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

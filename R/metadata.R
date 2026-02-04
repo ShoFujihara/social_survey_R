@@ -312,6 +312,167 @@ apply_labels_json <- function(data, file) {
 }
 
 
+#' Parse SPSS Label Syntax
+#'
+#' Parse SPSS VARIABLE LABELS and VALUE LABELS syntax into a data frame
+#' compatible with \code{\link{apply_labels}}.
+#'
+#' @param syntax Character string containing SPSS syntax. If NULL, \code{file} must be specified.
+#' @param file Path to an SPSS syntax file (.sps). If NULL, \code{syntax} must be specified.
+#' @return Data frame with columns: variable, label, value_labels
+#' @export
+#'
+#' @examples
+#' spss_syntax <- '
+#' VARIABLE LABELS
+#'   gender "Gender"
+#'   age "Age in years".
+#' VALUE LABELS
+#'   gender
+#'     1 "Male"
+#'     2 "Female".
+#' '
+#' label_def <- parse_spss_labels(spss_syntax)
+#'
+parse_spss_labels <- function(syntax = NULL, file = NULL) {
+
+  if (!is.null(file)) {
+    syntax <- paste(readLines(file, encoding = "UTF-8", warn = FALSE), collapse = "\n")
+  }
+
+  if (is.null(syntax) || !nzchar(trimws(syntax))) {
+    stop("Either 'syntax' or 'file' must be provided")
+  }
+
+  # Remove SPSS comment lines (lines starting with *)
+  lines <- strsplit(syntax, "\n")[[1]]
+  lines <- lines[!grepl("^\\s*\\*", lines)]
+  syntax <- paste(lines, collapse = "\n")
+
+  var_labels_list <- list()
+  val_labels_list <- list()
+
+  # --- Parse VARIABLE LABELS blocks ---
+  var_pattern <- "(?si)VARIABLE\\s+LABELS\\b\\s*(.*?)\\."
+  var_matches <- gregexpr(var_pattern, syntax, perl = TRUE)
+  var_blocks <- regmatches(syntax, var_matches)[[1]]
+
+  for (block in var_blocks) {
+    # Remove command name
+    body <- sub("(?i)VARIABLE\\s+LABELS\\s*", "", block, perl = TRUE)
+    body <- sub("\\.$", "", body)
+
+    # Match: varname "label" or varname 'label'
+    pair_pattern <- '(\\w+)\\s+["\']([^"\']*)["\']'
+    m <- gregexpr(pair_pattern, body, perl = TRUE)
+    pairs <- regmatches(body, m)[[1]]
+
+    for (p in pairs) {
+      parts <- regmatches(p, regexec(pair_pattern, p, perl = TRUE))[[1]]
+      if (length(parts) >= 3) {
+        var_labels_list[[parts[2]]] <- parts[3]
+      }
+    }
+  }
+
+  # --- Parse VALUE LABELS blocks ---
+  val_pattern <- "(?si)VALUE\\s+LABELS\\b\\s*(.*?)\\."
+  val_matches <- gregexpr(val_pattern, syntax, perl = TRUE)
+  val_blocks <- regmatches(syntax, val_matches)[[1]]
+
+  for (block in val_blocks) {
+    body <- sub("(?i)VALUE\\s+LABELS\\s*", "", block, perl = TRUE)
+    body <- sub("\\.$", "", body)
+
+    # Split by / to get per-variable sections
+    # Prepend / for uniform splitting
+    sections <- strsplit(paste0("/", trimws(body)), "\\s*/\\s*")[[1]]
+    sections <- sections[nzchar(trimws(sections))]
+
+    for (section in sections) {
+      section <- trimws(section)
+
+      # First token is the variable name
+      var_match <- regmatches(section, regexec("^(\\w+)\\s*", section, perl = TRUE))[[1]]
+      if (length(var_match) < 2) next
+      varname <- var_match[2]
+      rest <- sub("^\\w+\\s*", "", section, perl = TRUE)
+
+      # Match value "label" pairs (numeric values, possibly negative/decimal)
+      vl_pattern <- '(-?\\d+\\.?\\d*)\\s+["\']([^"\']*)["\']'
+      vl_matches <- gregexpr(vl_pattern, rest, perl = TRUE)
+      vl_pairs <- regmatches(rest, vl_matches)[[1]]
+
+      if (length(vl_pairs) > 0) {
+        label_parts <- character(length(vl_pairs))
+        for (k in seq_along(vl_pairs)) {
+          pp <- regmatches(vl_pairs[k], regexec(vl_pattern, vl_pairs[k], perl = TRUE))[[1]]
+          if (length(pp) >= 3) {
+            label_parts[k] <- paste0(pp[2], "=", pp[3])
+          }
+        }
+        val_labels_list[[varname]] <- paste(label_parts, collapse = "; ")
+      }
+    }
+  }
+
+  # Combine into apply_labels-compatible data frame
+  all_vars <- unique(c(names(var_labels_list), names(val_labels_list)))
+
+  if (length(all_vars) == 0) {
+    message("No labels found in syntax")
+    return(data.frame(variable = character(0), label = character(0),
+                      value_labels = character(0), stringsAsFactors = FALSE))
+  }
+
+  result <- data.frame(
+    variable = all_vars,
+    label = sapply(all_vars, function(v) {
+      if (v %in% names(var_labels_list)) var_labels_list[[v]] else NA_character_
+    }),
+    value_labels = sapply(all_vars, function(v) {
+      if (v %in% names(val_labels_list)) val_labels_list[[v]] else NA_character_
+    }),
+    stringsAsFactors = FALSE,
+    row.names = NULL
+  )
+
+  return(result)
+}
+
+
+#' Apply SPSS Label Syntax to Data Frame
+#'
+#' Parse SPSS VARIABLE LABELS and VALUE LABELS syntax and apply them to a data frame.
+#' Combines \code{\link{parse_spss_labels}} and \code{\link{apply_labels}}.
+#'
+#' @param data Data frame to apply labels
+#' @param syntax Character string containing SPSS syntax. If NULL, \code{file} must be specified.
+#' @param file Path to an SPSS syntax file (.sps). If NULL, \code{syntax} must be specified.
+#' @return Data frame with labels applied
+#' @export
+#'
+#' @examples
+#' spss_syntax <- '
+#' VARIABLE LABELS
+#'   gender "Gender"
+#'   age "Age in years".
+#' VALUE LABELS
+#'   gender
+#'     1 "Male"
+#'     2 "Female".
+#' '
+#' df <- apply_spss_labels(df, spss_syntax)
+#'
+#' # From .sps file
+#' # df <- apply_spss_labels(df, file = "labels.sps")
+#'
+apply_spss_labels <- function(data, syntax = NULL, file = NULL) {
+  label_def <- parse_spss_labels(syntax = syntax, file = file)
+  apply_labels(data, label_def)
+}
+
+
 #' Normalize Labels (Full-width to Half-width Conversion)
 #'
 #' Convert full-width characters to half-width in variable and value labels.

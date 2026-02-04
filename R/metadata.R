@@ -248,9 +248,12 @@ export_labels <- function(data, file = NULL) {
     row.names = NULL
   )
 
-  # Save to file if specified
+  # Save to file if specified (with UTF-8 BOM for Excel compatibility)
   if (!is.null(file)) {
-    utils::write.csv(result, file, row.names = FALSE, na = "")
+    con <- file(file, open = "w", encoding = "UTF-8")
+    on.exit(close(con))
+    writeLines("\ufeff", con, sep = "")
+    utils::write.csv(result, con, row.names = FALSE, na = "")
     message("Labels exported to: ", file)
   }
 

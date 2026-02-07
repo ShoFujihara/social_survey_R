@@ -1,5 +1,8 @@
 # socialsurvey
 
+[![R-CMD-check](https://github.com/ShoFujihara/social_survey_R/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ShoFujihara/social_survey_R/actions/workflows/R-CMD-check.yaml)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
 R functions for social survey data analysis.
 
 ## Design Philosophy
@@ -32,10 +35,14 @@ library(socialsurvey)
 | `export_labels_json()` | Export labels to JSON |
 | `normalize_labels()` | Convert full-width to half-width characters |
 | `validate_labels()` | Check labels for prohibited characters |
+| `parse_spss_labels()` | Parse SPSS syntax into label definitions |
+| `apply_spss_labels()` | Apply SPSS syntax labels to a data frame |
 | `std()` | Standardize variables (z-scores, T-scores, etc.) |
 | `fmt()` | Format numbers with fixed decimal places |
 | `quantile_group()` | Divide values into quantile groups |
 | `prank()` | Weighted percent rank for survey data |
+| `occ_scale()` | Assign SEI/SSI from occupation codes |
+| `check_occ_scale()` | Check for unmatched occupation codes |
 | `download_csrda()` | Download sample data from CSRDA |
 
 ## Usage
@@ -198,6 +205,27 @@ ssm <- ssm |> dplyr::mutate(pinc_prank = prank(pinc))
 ```
 
 Returns the weighted proportion of observations with values less than each value (0 to 1).
+
+### Occupational Scales (SEI/SSI)
+
+Assign Socio-Economic Index (SEI) and Social Status Index (SSI) values from occupation codes.
+
+```r
+# Assign SEI/SSI from SSM occupation codes
+ssm <- ssm |> occ_scale(occupation, type = "ssm")
+
+# Assign from JESS 232 occupation codes
+data <- data |> occ_scale(occ_code, type = "jess")
+
+# Check for codes without scale values
+check_occ_scale(ssm, occupation, type = "ssm")
+```
+
+Supported scale types:
+- `"ssm"`: SSM occupation codes (196 categories)
+- `"jess"`: JESS 232 occupation codes (231 categories)
+
+Data source: [OccupationalScales](https://github.com/ShoFujihara/OccupationalScales)
 
 ### Preprocessing Labels (Japanese Support)
 

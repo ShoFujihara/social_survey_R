@@ -1,0 +1,54 @@
+url: https://shofujihara.github.io/social_survey_R/
+
+template:
+  bootstrap: 5
+
+navbar:
+  structure:
+    left:  [intro, reference, news]
+    right: [search, github]
+
+reference:
+  - title: "Data Exploration"
+    desc: "Explore variables and frequencies"
+    contents:
+      - freq
+      - varlist
+      - metadata
+
+  - title: "Label Management"
+    desc: "Set, apply, export, and validate labels"
+    contents:
+      - set_var_label
+      - set_val_labels
+      - apply_labels
+      - apply_labels_json
+      - export_labels
+      - export_labels_json
+      - normalize_labels
+      - validate_labels
+
+  - title: "SPSS Labels"
+    desc: "Parse and apply SPSS syntax labels"
+    contents:
+      - parse_spss_labels
+      - apply_spss_labels
+
+  - title: "Occupational Scales"
+    desc: "Assign SEI/SSI from occupation codes"
+    contents:
+      - occ_scale
+      - check_occ_scale
+
+  - title: "Data Transformation"
+    desc: "Transform and format variables"
+    contents:
+      - std
+      - fmt
+      - quantile_group
+      - prank
+
+  - title: "Data Download"
+    desc: "Download sample survey data"
+    contents:
+      - download_csrda

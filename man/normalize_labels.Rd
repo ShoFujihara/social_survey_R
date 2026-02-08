@@ -19,25 +19,25 @@ normalize_labels(
 \arguments{
 \item{data}{Data frame with labelled variables}
 
-\item{convert_numbers}{Convert full-width numbers (０-９) to half-width (0-9). Default TRUE.}
+\item{convert_numbers}{Convert full-width numbers to half-width (0-9). Default TRUE.}
 
-\item{convert_symbols}{Convert full-width symbols (＝, ；, etc.) to half-width. Default TRUE.}
+\item{convert_symbols}{Convert full-width symbols (=, ;, etc.) to half-width. Default TRUE.}
 
-\item{convert_alpha}{Convert full-width alphabet (Ａ-Ｚ, ａ-ｚ) to half-width. Default TRUE.}
+\item{convert_alpha}{Convert full-width alphabet (A-Z, a-z) to half-width. Default TRUE.}
 
-\item{convert_space}{Convert full-width space (　) to half-width. Default TRUE.}
+\item{convert_space}{Convert full-width space to half-width. Default TRUE.}
 
 \item{space_before_paren}{Add space before half-width opening parenthesis when converting
-from full-width. Default TRUE. Example: "問1（回答）" → "問1 (回答)".}
+from full-width. Default TRUE.}
 
 \item{space_after_paren}{Add space after half-width closing parenthesis when converting
-from full-width. Default TRUE. Example: "（注）回答" → "(注) 回答".}
+from full-width. Default TRUE.}
 
 \item{space_after_colon}{Add space after half-width colon when converting
-from full-width. Default TRUE. Example: "問1：回答" → "問1: 回答".}
+from full-width. Default TRUE.}
 
 \item{space_after_period}{Add space after half-width period when converting
-from full-width. Default TRUE. Example: "問1．回答" → "問1. 回答".}
+from full-width. Default TRUE.}
 }
 \value{
 Data frame with normalized labels

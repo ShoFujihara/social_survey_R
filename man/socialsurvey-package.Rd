@@ -2,45 +2,14 @@
 % Please edit documentation in R/socialsurvey-package.R
 \docType{package}
 \name{socialsurvey-package}
-\alias{socialsurvey-package}
 \alias{socialsurvey}
+\alias{socialsurvey-package}
 \title{socialsurvey: R Functions for Social Survey Data Analysis}
 \description{
-A collection of R functions for social survey data analysis.
-Includes tools for frequency tables, metadata management, variable labels,
-value labels, and codebook generation.
-}
-\section{Main Functions}{
-
-\describe{
-\item{\code{\link{freq}}}{Frequency table with valid/missing percentages}
-\item{\code{\link{metadata}}}{Extract variable and value labels}
-\item{\code{\link{set_var_label}}}{Set variable label}
-\item{\code{\link{set_val_labels}}}{Set value labels}
-\item{\code{\link{apply_labels}}}{Batch apply labels from definition table}
-}
-}
-
-\section{Supported File Formats}{
-
-\itemize{
-\item Stata (.dta)
-\item SPSS (.sav)
-\item SAS (.sas7bdat)
-}
-}
-
-\examples{
-library(socialsurvey)
-
-# Frequency table
-freq(dplyr::starwars, gender)
-
-# With Japanese output
-freq(dplyr::starwars, gender, lang = "ja")
-
+A collection of R functions for social survey data analysis. Includes tools for frequency tables, metadata management, variable labels, value labels, and codebook generation. Supports Stata, SPSS, and SAS files.
 }
 \author{
 \strong{Maintainer}: Sho Fujihara \email{sho.fujihara@iss.u-tokyo.ac.jp}
 
 }
+\keyword{internal}

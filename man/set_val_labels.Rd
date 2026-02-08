@@ -20,6 +20,7 @@ Data frame with value labels applied
 Set Value Labels
 }
 \examples{
+df <- data.frame(gender = c(1, 2, 1), age = c(25, 30, 35))
 df <- set_val_labels(df, gender, `1` = "Male", `2` = "Female")
 
 }

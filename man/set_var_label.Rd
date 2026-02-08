@@ -20,6 +20,7 @@ Data frame with label applied
 Set Variable Label
 }
 \examples{
+df <- data.frame(gender = c(1, 2, 1), age = c(25, 30, 35))
 df <- set_var_label(df, gender, "Gender")
 
 }

@@ -6,3 +6,10 @@
 ^pkgdown$
 ^CLAUDE\.md$
 ^LICENSE\.md$
+^data$
+^figures$
+^output$
+^qmd$
+^u001$
+^u002$
+^\.claude$

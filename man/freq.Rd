@@ -40,7 +40,7 @@ freq(df, gender)
 freq(df, gender, wt = weight)
 
 # Frequency table (with probability weight)
-freq(df, gender, wt = prob, prob = TRUE)
+freq(df, gender, wt = weight, prob = TRUE)
 
 # Japanese output
 freq(df, gender, lang = "ja")

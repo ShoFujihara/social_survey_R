@@ -74,7 +74,7 @@ metadata <- function(data, lang = "en", quiet = FALSE) {
   # Display summary
   if (!quiet) {
     labels <- if (lang == "ja") {
-      list(title = "メタデータ", vars = "変数数", cases = "ケース数")
+      list(title = "\u30e1\u30bf\u30c7\u30fc\u30bf", vars = "\u5909\u6570\u6570", cases = "\u30b1\u30fc\u30b9\u6570")
     } else {
       list(title = "Metadata", vars = "Variables", cases = "Cases")
     }
@@ -96,6 +96,7 @@ metadata <- function(data, lang = "en", quiet = FALSE) {
 #' @export
 #'
 #' @examples
+#' df <- data.frame(gender = c(1, 2, 1), age = c(25, 30, 35))
 #' df <- set_var_label(df, gender, "Gender")
 #'
 set_var_label <- function(data, var, label) {
@@ -114,6 +115,7 @@ set_var_label <- function(data, var, label) {
 #' @export
 #'
 #' @examples
+#' df <- data.frame(gender = c(1, 2, 1), age = c(25, 30, 35))
 #' df <- set_val_labels(df, gender, `1` = "Male", `2` = "Female")
 #'
 set_val_labels <- function(data, var, ...) {
@@ -479,18 +481,18 @@ apply_spss_labels <- function(data, syntax = NULL, file = NULL) {
 #' Useful for Japanese data where numbers and symbols may be in full-width format.
 #'
 #' @param data Data frame with labelled variables
-#' @param convert_numbers Convert full-width numbers (０-９) to half-width (0-9). Default TRUE.
-#' @param convert_symbols Convert full-width symbols (＝, ；, etc.) to half-width. Default TRUE.
-#' @param convert_alpha Convert full-width alphabet (Ａ-Ｚ, ａ-ｚ) to half-width. Default TRUE.
-#' @param convert_space Convert full-width space (　) to half-width. Default TRUE.
+#' @param convert_numbers Convert full-width numbers to half-width (0-9). Default TRUE.
+#' @param convert_symbols Convert full-width symbols (=, ;, etc.) to half-width. Default TRUE.
+#' @param convert_alpha Convert full-width alphabet (A-Z, a-z) to half-width. Default TRUE.
+#' @param convert_space Convert full-width space to half-width. Default TRUE.
 #' @param space_before_paren Add space before half-width opening parenthesis when converting
-#'   from full-width. Default TRUE. Example: "問1（回答）" → "問1 (回答)".
+#'   from full-width. Default TRUE.
 #' @param space_after_paren Add space after half-width closing parenthesis when converting
-#'   from full-width. Default TRUE. Example: "（注）回答" → "(注) 回答".
+#'   from full-width. Default TRUE.
 #' @param space_after_colon Add space after half-width colon when converting
-#'   from full-width. Default TRUE. Example: "問1：回答" → "問1: 回答".
+#'   from full-width. Default TRUE.
 #' @param space_after_period Add space after half-width period when converting
-#'   from full-width. Default TRUE. Example: "問1．回答" → "問1. 回答".
+#'   from full-width. Default TRUE.
 #' @return Data frame with normalized labels
 #' @export
 #'
@@ -671,23 +673,23 @@ validate_labels <- function(data, check_newlines = TRUE, check_tabs = TRUE,
     found <- character()
 
     if (check_newlines && grepl("[\n\r]", s)) {
-      found <- c(found, if (lang == "ja") "改行文字" else "newline character")
+      found <- c(found, if (lang == "ja") "\u6539\u884c\u6587\u5b57" else "newline character")
     }
 
     if (check_tabs && grepl("\t", s)) {
-      found <- c(found, if (lang == "ja") "タブ文字" else "tab character")
+      found <- c(found, if (lang == "ja") "\u30bf\u30d6\u6587\u5b57" else "tab character")
     }
 
     if (check_control) {
       # Check for control characters (excluding \n, \r, \t which are checked separately)
       ctrl_pattern <- "[\\x01-\\x08\\x0B\\x0C\\x0E-\\x1F]"
       if (grepl(ctrl_pattern, s, perl = TRUE)) {
-        found <- c(found, if (lang == "ja") "制御文字" else "control character")
+        found <- c(found, if (lang == "ja") "\u5236\u5fa1\u6587\u5b57" else "control character")
       }
     }
 
     if (check_csv_special && internal_type == "value_label" && grepl(";", s, fixed = TRUE)) {
-      found <- c(found, if (lang == "ja") "セミコロン(CSV非互換)" else "semicolon (CSV incompatible)")
+      found <- c(found, if (lang == "ja") "\u30bb\u30df\u30b3\u30ed\u30f3(CSV\u975e\u4e92\u63db)" else "semicolon (CSV incompatible)")
     }
 
     if (length(found) > 0) {
@@ -707,7 +709,7 @@ validate_labels <- function(data, check_newlines = TRUE, check_tabs = TRUE,
     # Check variable label
     var_lbl <- labelled::var_label(data[[v]])
     if (!is.null(var_lbl)) {
-      display_type <- if (lang == "ja") "変数ラベル" else "variable_label"
+      display_type <- if (lang == "ja") "\u5909\u6570\u30e9\u30d9\u30eb" else "variable_label"
       result <- check_string(var_lbl, v, "variable_label", display_type)
       if (!is.null(result)) {
         issues <- rbind(issues, result)
@@ -717,7 +719,7 @@ validate_labels <- function(data, check_newlines = TRUE, check_tabs = TRUE,
     # Check value labels
     val_lbls <- labelled::val_labels(data[[v]])
     if (!is.null(val_lbls) && length(val_lbls) > 0) {
-      display_type <- if (lang == "ja") "値ラベル" else "value_label"
+      display_type <- if (lang == "ja") "\u5024\u30e9\u30d9\u30eb" else "value_label"
       for (i in seq_along(val_lbls)) {
         lbl_name <- names(val_lbls)[i]
         lbl_value <- val_lbls[i]
@@ -731,12 +733,12 @@ validate_labels <- function(data, check_newlines = TRUE, check_tabs = TRUE,
 
   # Report results
   if (nrow(issues) == 0) {
-    msg <- if (lang == "ja") "問題は見つかりませんでした" else "No issues found"
+    msg <- if (lang == "ja") "\u554f\u984c\u306f\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f" else "No issues found"
     message(msg)
     return(invisible(issues))
   } else {
     msg <- if (lang == "ja") {
-      paste0(nrow(issues), " 件の問題が見つかりました")
+      paste0(nrow(issues), " \u4ef6\u306e\u554f\u984c\u304c\u898b\u3064\u304b\u308a\u307e\u3057\u305f")
     } else {
       paste0(nrow(issues), " issue(s) found")
     }

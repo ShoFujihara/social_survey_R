@@ -38,10 +38,10 @@ freq <- function(data, var, wt = 1, prob = FALSE, lang = "en", quiet = FALSE) {
   # Language settings
   labels <- if (lang == "ja") {
     list(
-      var = "変数",
-      total = "総数",
-      valid = "有効",
-      missing = "欠損"
+      var = "\u5909\u6570",
+      total = "\u7dcf\u6570",
+      valid = "\u6709\u52b9",
+      missing = "\u6b20\u640d"
     )
   } else {
     list(
@@ -52,9 +52,12 @@ freq <- function(data, var, wt = 1, prob = FALSE, lang = "en", quiet = FALSE) {
     )
   }
 
-  # Apply weight (if prob = TRUE, use inverse of probability)
-  data <- data |>
-    mutate(.wt = if (prob) 1 / {{ wt }} else {{ wt }})
+  # Apply weight (evaluate prob outside mutate to avoid data masking)
+  if (prob) {
+    data <- data |> mutate(.wt = 1 / {{ wt }})
+  } else {
+    data <- data |> mutate(.wt = {{ wt }})
+  }
 
   # Total counts (including NA)
   n_total <- sum(data$.wt, na.rm = TRUE)
